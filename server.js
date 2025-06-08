@@ -12,11 +12,13 @@ app.get("/player/:username", async (req, res) => {
 
   try {
     const hiveResponse = await fetch(`https://api.playhive.com/v0/game/all/all/${username}`);
+    const text = await hiveResponse.text();
+    console.log("Hive API response:", text);
 
-    const text = await hiveResponse.text(); // get raw response text
-    console.log("Hive API response:", text); // debug print
-
-    if (!hiveResponse.ok) throw new Error("Hive API error");
+    if (!hiveResponse.ok) {
+      console.error(`Hive API returned status ${hiveResponse.status}`);
+      return res.status(hiveResponse.status).json({ error: "Player not found or API error" });
+    }
 
     const stats = JSON.parse(text);
     res.json(stats);
@@ -25,6 +27,7 @@ app.get("/player/:username", async (req, res) => {
     res.status(500).json({ error: "Player not found or API error" });
   }
 });
+
 
 
 
