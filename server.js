@@ -9,25 +9,22 @@ app.use(cors());
 
 app.get("/player/:username", async (req, res) => {
   const username = req.params.username;
-  console.log(`Fetching data for: ${username}`);
 
   try {
-    const hiveUrl = `https://api.playhive.com/v0/game/all/${username}`;
-    console.log("Requesting:", hiveUrl);
-
-    const hiveResponse = await fetch(hiveUrl);
-    const text = await hiveResponse.text(); // Get raw response first
-    console.log("Hive raw response:", text);
+    const hiveResponse = await fetch(`https://api.playhive.com/v0/game/all/${username}`);
+    const text = await hiveResponse.text(); // get raw response text
+    console.log("Hive API response:", text); // debug print
 
     if (!hiveResponse.ok) throw new Error("Hive API error");
 
     const stats = JSON.parse(text);
     res.json(stats);
   } catch (error) {
-    console.error("Error fetching Hive data:", error.message);
+    console.error("Error fetching Hive data:", error);
     res.status(500).json({ error: "Player not found or API error" });
   }
 });
+
 
 
 app.listen(PORT, () => {
