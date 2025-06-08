@@ -1,101 +1,78 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Hive Average Level Checker</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Hive Player Average Level</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #1e1e2f;
-      color: #f0f0f0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 2rem;
-    }
-    h1 {
-      color: #ffd700;
+      max-width: 480px;
+      margin: 2rem auto;
+      padding: 1rem;
+      background: #f9f9f9;
+      color: #222;
     }
     input, button {
       font-size: 1rem;
       padding: 0.5rem;
-      margin: 0.5rem;
-      border-radius: 8px;
-      border: none;
+      margin-right: 0.5rem;
     }
-    input {
-      width: 200px;
-    }
-    button {
-      background-color: #4caf50;
-      color: white;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #45a049;
-    }
-    .result {
+    #result {
       margin-top: 1rem;
+      font-weight: bold;
       font-size: 1.2rem;
-      color: #00ffcc;
-    }
-    .error {
-      color: red;
     }
   </style>
 </head>
 <body>
-
-  <h1>Hive Average Level Checker</h1>
-  <input type="text" id="username" placeholder="Enter Minecraft Username">
-  <button onclick="getAverageLevel()">Check Average</button>
-  <div id="output" class="result"></div>
+  <h1>Hive Player Average Level</h1>
+  <input id="username" type="text" placeholder="Enter Minecraft username" />
+  <button id="checkBtn">Check Level</button>
+  <div id="result"></div>
 
   <script>
-    async function getAverageLevel() {
+    // Change this to your Render backend URL
+    const RENDER_URL = "https://all-hive-statistics.onrender.com";
+
+    document.getElementById("checkBtn").addEventListener("click", async () => {
       const username = document.getElementById("username").value.trim();
-      const output = document.getElementById("output");
-      output.textContent = "Fetching data...";
+      const resultDiv = document.getElementById("result");
+      resultDiv.textContent = "";
 
       if (!username) {
-        output.textContent = "Please enter a username.";
+        resultDiv.textContent = "Please enter a username.";
         return;
       }
 
       try {
-        const res = await fetch(`https://api.playhive.com/api/game/all/${username}`);
-        if (!res.ok) {
-          throw new Error("Player not found or API error.");
+        const response = await fetch(`${RENDER_URL}/player/${encodeURIComponent(username)}`);
+        if (!response.ok) {
+          resultDiv.textContent = "Player not found or error fetching data.";
+          return;
         }
+        const data = await response.json();
 
-        const data = await res.json();
         let totalLevel = 0;
         let gameCount = 0;
-
         for (const game in data) {
           const xp = data[game].xp;
           if (typeof xp === "number") {
-            const level = Math.floor(xp / 100); // Basic approximation
-            totalLevel += level;
+            totalLevel += Math.floor(xp / 100);
             gameCount++;
           }
         }
 
         if (gameCount === 0) {
-          output.textContent = "No game data found for this player.";
+          resultDiv.textContent = `${username} has no game data.`;
         } else {
-          const average = (totalLevel / gameCount).toFixed(2);
-          output.innerHTML = `
-            <strong>${username}</strong>'s Average Hive Level:<br>
-            <span style="font-size: 1.5rem;">${average}</span> across ${gameCount} games
-          `;
+          const avg = (totalLevel / gameCount).toFixed(2);
+          resultDiv.textContent = `${username}'s average level: ${avg}`;
         }
-
-      } catch (error) {
-        output.innerHTML = `<span class="error">${error.message}</span>`;
+      } catch (err) {
+        resultDiv.textContent = "Failed to fetch data. Try again later.";
       }
-    }
+    });
   </script>
-
 </body>
 </html>
