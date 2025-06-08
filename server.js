@@ -11,7 +11,8 @@ app.get("/player/:username", async (req, res) => {
   const username = req.params.username;
 
   try {
-    const hiveResponse = await fetch(`https://api.playhive.com/v0/game/all/${username}`);
+    const hiveResponse = await fetch(`https://api.playhive.com/v0/game/all/all/${username}`);
+
     const text = await hiveResponse.text(); // get raw response text
     console.log("Hive API response:", text); // debug print
 
